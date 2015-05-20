@@ -1,6 +1,6 @@
 # Paul
 
-Paul is utility belt of functions for working with tree data structures such as abstract syntax trees, binary trees, and other nested data structures.
+Paul is a library of functions for working with tree data structures such as abstract syntax trees, binary trees, and other nested data structures.
 
 ```bash
 npm install paul # hey, that rhymes
@@ -30,18 +30,18 @@ require('assert').equal(20, sum);
 
 ## Documentation
 
-- `Paul(walkFn)`
-	- `walker(walkFn) func`
-	- `walk(tree, walkFn)`
+- [`Paul(walkFn)`](https://github.com/andrejewski/paul#paulwalkfn)
+	- [`walker(walkFn) func`](https://github.com/andrejewski/paul#walkerwalkfn-func)
+	- [`walk(tree, walkFn)`](https://github.com/andrejewski/paul#walktree-walkfn)
 	- `prototype`
-		- `map(tree, transform) tree`
-		- `filter(tree, predicate) tree`
-		- `where(tree, properties) tree`
-		- `iterator(tree) Iterator`
-		- `forEach(tree, iteratee)`
-		- `find(tree, predicate) node`
-		- `findWhere(tree, properties) node`
-		- `reduce(tree, iteratee, [memo]) memo`
+		- [`map(tree, transform) tree`](https://github.com/andrejewski/paul#maptree-transform-tree)
+		- [`filter(tree, predicate) tree`](https://github.com/andrejewski/paul#filtertree-predicate-tree)
+		- [`where(tree, properties) tree`](https://github.com/andrejewski/paul#wheretree-properties-tree)
+		- [`iterator(tree) Iterator`](https://github.com/andrejewski/paul#iteratortree-iterator)
+		- [`forEach(tree, iteratee)`](https://github.com/andrejewski/paul#foreachtree-iteratee)
+		- [`find(tree, predicate) node`](https://github.com/andrejewski/paul#findtree-predicate-node)
+		- [`findWhere(tree, properties) node`](https://github.com/andrejewski/paul#findwheretree-properties-node)
+		- [`reduce(tree, iteratee, [memo]) memo`](https://github.com/andrejewski/paul#reducetree-iteratee-memo-memo)
 
 **Note:** Methods `iterator()` through `reduce()` are not actual methods and instead there are two methods that differ solely on traversal method. For instance, `find()` must be called as either `depthFind()` or `breadthFind()`. An [explanation](http://stackoverflow.com/a/687752/1444710) of the difference between these traversals may be helpful.
 
@@ -51,6 +51,8 @@ Assume all code examples are preceded by the following:
 var Paul = require('paul');
 var assert = require('assert');
 ```
+
+===
 
 ### Paul(walkFn)
 
@@ -62,7 +64,7 @@ An instance of Paul will have all of the prototype functions listed above. See `
 
 ### walker(walkFn) func
 
-The function `walker` takes a walk function and returns a function to be used on a node to return its children.
+The function `walker` takes a walking function and returns a function to be used on a node to return its children.
 
 What makes Paul useful is this function. Supply `walker` a walking function with the signature `function(node, walk)`, which decides how a node's children are walked or ignored.
 
@@ -77,9 +79,9 @@ function walkFn(node, walk) {
 var walker1 = Paul.walker(walkFn);
 ```
 
-Paul walks through the given tree node-by-node with your walkFn until no more child nodes are found and the walking ends.
+Paul walks through the given tree node-by-node with your walk function until no more child nodes are found and the walking ends.
 
-If an AST has a lot of properties that have child nodes values, `walker` also accepts an array of property keys.
+If an AST has a lot of properties that could have child nodes values, `walker` also accepts an array of property keys.
 
 ```js
 var walker2 = Paul.walker(['left', 'right', 'children']);
