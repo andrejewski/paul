@@ -4,14 +4,15 @@ function Paul(walkFn) {
 		return new Paul(walkFn);
 	}
 	var walker = this.walker = Paul.walker(walkFn);
-	var depthIter = this.depthIterator = Paul.depthIterator(walker);
-	var breadthIter = this.breadthIterator = Paul.breadthIterator(walker);
 
 	this.map = Paul.map(walker);
 	this.filter = Paul.filter(walker);
 	this.where = Paul.where(walker);
 
-	var methods = ['forEach', 'find', 'findWhere', 'reduce'];
+	var depthIter = this.depthIterator = Paul.depthIterator(walker);
+	var breadthIter = this.breadthIterator = Paul.breadthIterator(walker);
+
+	var methods = ['forEach', 'find', 'findWhere', 'reduce', 'parent'];
 	for(var i = 0; i < methods.length; i++) {
 		var method = methods[i];
 		var Method = cap(method);
@@ -19,6 +20,9 @@ function Paul(walkFn) {
 		this['depth'+Method] = Paul[method](depthIter);
 		this['breadth'+Method] = Paul[method](breadthIter);
 	}
+
+	this.depthSiblings = Paul.siblings(walker, depthIter);
+	this.breadthSiblings = Paul.siblings(walker, breadthIter);
 }
 
 Paul.walker = function walker(walkFn) {
@@ -104,28 +108,38 @@ Paul.where = function where(walker) {
 	}
 }
 
+function getChildren(walker, node) {
+	var children = [];
+	var steps = walker(node);
+	for(var i = 0; i < steps.length; i++) {
+		children = children.concat(steps[i][1]);
+	}
+	return children;
+}
+
 Paul.depthIterator = function depthIterator(walker) {
 	return function _depthIterator(tree) {
 		var levels = [[tree]];
 		var sweeps = [0];
 
-		function last(arr) {
-			return arr[arr.length - 1];
+		function fromEnd(arr, i) {
+			return arr[arr.length - 1 - i];
 		}
 
 		return {
 			next: function next() {
 				if(!sweeps.length) return {done: true};
-				var nodes = last(levels);
-				var index = last(sweeps);
+				var nodes = fromEnd(levels, 0);
+				var index = fromEnd(sweeps, 0);
 				if(index < nodes.length) {
 					sweeps[sweeps.length - 1]++;
 
-					var children = [];
-					var steps = walker(nodes[index]);
-					for(var i = 0; i < steps.length; i++) {
-						children = children.concat(steps[i][1]);
-					}
+					var adults = fromEnd(levels, 1);
+					var parent = adults 
+						? adults[fromEnd(sweeps, 1) - 1]
+						: undefined;
+
+					var children = getChildren(walker, nodes[index]);
 					if(children.length) {
 						levels.push(children);
 						sweeps.push(0);
@@ -133,7 +147,8 @@ Paul.depthIterator = function depthIterator(walker) {
 
 					return {
 						done: false,
-						value: nodes[index]
+						value: nodes[index],
+						parent: parent
 					};
 				} else {
 					levels.pop();
@@ -147,26 +162,38 @@ Paul.depthIterator = function depthIterator(walker) {
 
 Paul.breadthIterator = function breadthIterator(walker) {
 	return function _breadthIterator(tree) {
-		var nodes = [tree];
+		var elder = undefined;
+		var nodes = [];
 		var index = 0;
+
+		var subnodes = [tree];
+		var subindex = 0;
+
+		var level = [tree];
+
 		return {
 			next: function next() {
-				if(index < nodes.length) {
+				if(subindex < subnodes.length) {
 					return {
 						done: false, 
-						value: nodes[index++]
+						value: subnodes[subindex++],
+						parent: elder
 					};
+				} else if(index < nodes.length) {
+					elder = nodes[index++];
+					subnodes = getChildren(walker, elder);
+					subindex = 0;
+
+					level = level.concat(subnodes);
+					return next();
 				} else {
-					children = [];
-					for(var i = 0; i < nodes.length; i++) {
-						var steps = walker(nodes[i]);
-						for(var j = 0; j < steps.length; j++) {
-							children = children.concat(steps[j][1]);
-						}
+					if(!level.length) {
+						return {done: true};
 					}
-					if(!children.length) return {done: true};
-					nodes = children;
+
+					nodes = level;
 					index = 0;
+					level = [];
 					return next();
 				}
 			}
@@ -179,7 +206,7 @@ Paul.forEach = function forEach(iterator) {
 		var iter = iterator(tree);
 		var res;
 		while(!(res = iter.next()).done) {
-			func(res.value);
+			func(res.value, res.parent, tree);
 		}
 	}
 }
@@ -189,7 +216,7 @@ Paul.find = function find(iterator) {
 		var iter = iterator(tree);
 		var res;
 		while(!(res = iter.next()).done) {
-			if(func(res.value)) return res.value;
+			if(func(res.value, res.parent, tree)) return res.value;
 		}
 		return undefined;
 	}
@@ -209,10 +236,45 @@ Paul.reduce = function reduce(iterator) {
 			if(memo === void 0) {
 				memo = res.value;
 			} else {
-				memo = func(memo, res.value);
+				memo = func(memo, res.value, res.parent, tree);
 			}
 		}
 		return memo;
+	}
+}
+
+Paul.parent = function parent(iterator) {
+	return function _parent(tree, node) {
+		if(node !== tree) {
+			var iter = iterator(tree);
+			var res;
+			while(!(res = iter.next()).done) {
+				if(res.value === node) {
+					return res.parent;
+				}
+			}
+		}
+		return undefined;
+	}
+}
+
+Paul.siblings = function siblings(walker, iterator) {
+	return function _siblings(tree, node) {
+		var parent = Paul.parent(iterator)(tree, node);
+		if(parent) {
+			var steps = walker(parent);
+			for(var i = 0; i < steps.length; i++) {
+				var nodes = steps[i][1];
+				if(Array.isArray(nodes)) {
+					var index = nodes.indexOf(node);
+					if(~index) return {
+						left: nodes.slice(0, index),
+						right: nodes.slice(index + 1)
+					};
+				}
+			}
+		}
+		return undefined;
 	}
 }
 

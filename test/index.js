@@ -204,6 +204,21 @@ describe('Paul', function() {
 				}
 				assert.equal(ids, 'ABDECFG');
 			});
+
+			it('should return the correct nodes\' parents', function() {
+				var iter = walkerA.depthIterator(treeA);
+				var list = [];
+				while(true) {
+					var res = iter.next();
+					if(res.done) break;
+					if(res.parent) {
+						list.push(res.parent.id);
+					} else {
+						list.push(res.parent);
+					}
+				}
+				assert.deepEqual(list, [undefined, 'A', 'B', 'B', 'A', 'C', 'C']);
+			});
 		});
 
 		describe('breadthIterator(tree) Iterator', function() {
@@ -221,6 +236,21 @@ describe('Paul', function() {
 					ids += res.value.id;
 				}
 				assert.equal(ids, 'ABCDEFG');
+			});
+
+			it('should return the correct nodes\' parents', function() {
+				var iter = walkerA.breadthIterator(treeA);
+				var list = [];
+				while(true) {
+					var res = iter.next();
+					if(res.done) break;
+					if(res.parent) {
+						list.push(res.parent.id);
+					} else {
+						list.push(res.parent);
+					}
+				}
+				assert.deepEqual(list, [undefined, 'A', 'A', 'B', 'B', 'C', 'C']);
 			});
 		});
 
@@ -371,6 +401,126 @@ describe('Paul', function() {
 					return str + node.id; 
 				}, '');
 				assert.equal(ids, "ABCDEFG");
+			});
+		});
+
+		describe('depthParent(tree, node) parentNode', function() {
+			it('should return undefined if the node is not found in the tree', function() {
+				var node = {id: 'Z'};
+				assert.equal(walkerA.depthParent(treeA, node), undefined);
+			});
+
+			it('should return undefined if the node is the tree', function() {
+				assert.equal(walkerA.depthParent(treeA, treeA), undefined);
+			});
+
+			it('should return the correct parent node', function() {
+				var nodeB = treeA.children[0];
+				assert.equal(walkerA.depthParent(treeA, nodeB), treeA);
+
+				var nodeE = nodeB.children[1];
+				assert.equal(walkerA.depthParent(treeA, nodeE), nodeB);
+			});
+		});
+
+		describe('breadthParent(tree, node) parentNode', function() {
+			it('should return undefined if the node is not found in the tree', function() {
+				var node = {id: 'Z'};
+				assert.equal(walkerA.breadthParent(treeA, node), undefined);
+			});
+
+			it('should return undefined if the node is the tree', function() {
+				assert.equal(walkerA.breadthParent(treeA, treeA), undefined);
+			});
+
+			it('should return the correct parent node', function() {
+				var nodeB = treeA.children[0];
+				assert.equal(walkerA.breadthParent(treeA, nodeB), treeA);
+
+				var nodeE = nodeB.children[1];
+				assert.equal(walkerA.breadthParent(treeA, nodeE), nodeB);
+			});
+		});
+
+		describe('depthSiblings(tree, node) {left, right}', function() {
+			var treeB = {
+				op: '/',
+				left: {value: 25},
+				right: {value: 5},
+				children: [{value: 5}, {value: 10}, {value: 15}, {value: 20}, {value: 25}]
+			};
+			var walkerB = new Paul(['left', 'right', 'children']);
+
+			it('should return undefined if the node is not found in the tree', function() {
+				var node = {id: 'Z'};
+				assert.equal(walkerA.depthSiblings(treeA, node), undefined);
+			});
+
+			it('should return undefined if the node cannot have siblings', function() {
+				assert.equal(walkerB.depthSiblings(treeB, treeB.left), undefined);
+				assert.equal(walkerB.depthSiblings(treeB, treeB.right), undefined);
+				assert.ok(walkerB.depthSiblings(treeB, treeB.children[0]) !== undefined);
+			});
+
+			it('should return an object of {left and right} siblings', function() {
+				var sib0 = walkerB.depthSiblings(treeB, treeB.children[0]);
+				assert.deepEqual(sib0, {
+					left: [],
+					right: [{value: 10}, {value: 15}, {value: 20}, {value: 25}]
+				});
+				
+				var sib4 = walkerB.depthSiblings(treeB, treeB.children[4]);
+				assert.deepEqual(sib4, {
+					left: [{value: 5}, {value: 10}, {value: 15}, {value: 20}],
+					right: []
+				});
+				
+				var sib2 = walkerB.depthSiblings(treeB, treeB.children[2]);
+				assert.deepEqual(sib2, {
+					left: [{value: 5}, {value: 10}],
+					right: [{value: 20}, {value: 25}]
+				});
+			});
+		});
+
+		describe('breadthSiblings(tree, node) {left, right}', function() {
+			var treeB = {
+				op: '/',
+				left: {value: 25},
+				right: {value: 5},
+				children: [{value: 5}, {value: 10}, {value: 15}, {value: 20}, {value: 25}]
+			};
+			var walkerB = new Paul(['left', 'right', 'children']);
+
+			it('should return undefined if the node is not found in the tree', function() {
+				var node = {id: 'Z'};
+				assert.equal(walkerA.breadthSiblings(treeA, node), undefined);
+			});
+
+			it('should return undefined if the node cannot have siblings', function() {
+				assert.equal(walkerB.breadthSiblings(treeB, treeB.left), undefined);
+				assert.equal(walkerB.breadthSiblings(treeB, treeB.right), undefined);
+				assert.ok(walkerB.breadthSiblings(treeB, treeB.children[0]) !== undefined);
+			});
+
+			it('should return an object of {left and right} siblings', function() {
+				var sib0 = walkerB.breadthSiblings(treeB, treeB.children[0]);
+				assert.deepEqual(sib0, {
+					left: [],
+					right: [{value: 10}, {value: 15}, {value: 20}, {value: 25}]
+				});
+				
+				var sib4 = walkerB.breadthSiblings(treeB, treeB.children[4]);
+				assert.deepEqual(sib4, {
+					left: [{value: 5}, {value: 10}, {value: 15}, {value: 20}],
+					right: []
+				});
+				
+				var sib2 = walkerB.breadthSiblings(treeB, treeB.children[2]);
+				assert.deepEqual(sib2, {
+					left: [{value: 5}, {value: 10}],
+					right: [{value: 20}, {value: 25}]
+				});
 			});
 		});
 	});

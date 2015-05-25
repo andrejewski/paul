@@ -42,8 +42,10 @@ require('assert').equal(20, sum);
 		- [`find(tree, predicate) node`](https://github.com/andrejewski/paul#findtree-predicate-node)
 		- [`findWhere(tree, properties) node`](https://github.com/andrejewski/paul#findwheretree-properties-node)
 		- [`reduce(tree, iteratee, [memo]) memo`](https://github.com/andrejewski/paul#reducetree-iteratee-memo-memo)
+		- `parent(tree, node) parentNode`
+		- `siblings(tree, node) {left, right}`
 
-**Note:** Methods `iterator()` through `reduce()` are not actual methods and instead there are two methods that differ solely on traversal method. For instance, `find()` must be called as either `depthFind()` or `breadthFind()`. An [explanation](http://stackoverflow.com/a/687752/1444710) of the difference between these traversals may be helpful.
+**Note:** Methods `iterator()` through `siblings()` are not actual methods and instead there are two methods that differ solely on traversal method. For instance, `find()` must be called as either `depthFind()` or `breadthFind()`. An [explanation](http://stackoverflow.com/a/687752/1444710) of the difference between these traversals may be helpful.
 
 Assume all code examples are preceded by the following:
 
@@ -282,6 +284,49 @@ var text = paul.depthReduce(tree, function(str, node) {
 }, "");
 
 assert.equal(text, "ABC");
+```
+
+===
+
+### parent(tree, node) parentNode
+
+Returns the parent node of the given **node**. If the node is not found in the **tree** or the node has no parent (meaning the node is the tree), `undefined` is returned. 
+
+- `depthParent(tree, node) parentNode`: depth-first
+- `breadthParent(tree, node) parentNode`: breadth-first
+
+```js
+var tree = {id: "A", kids: [{id: "B"}, {id: "C"}]};
+var paul = new Paul(['kids']);
+
+var nodeB = tree.kids[0];
+var parentOfB = paul.depthParent(tree, nodeB);
+
+assert.equal(tree, parentOfB);
+```
+
+===
+
+### siblings(tree, node) {left, right}
+
+Returns the sibling nodes of the given **node**. If the node is not found in the **tree** or the node has no parent (meaning the node is the tree), `undefined` is returned. Also if the node is not in an Array member (i.e {child: node}), the node cannot have any siblings and thus `undefined` is returned.
+
+Siblings of a node are returned in an object containing two properties `left` and `right`. Siblings that come before the given node are placed in the `left` property. Siblings that come after the given node are placed in the `right` property.
+
+- `depthSiblings(tree, node) {left, right}`: depth-first
+- `breadthSiblings(tree, node) {left, right}`: breadth-first
+
+```js
+var tree = {id: "A", kids: [{id: "B"}, {id: "C"}, {id: "D"}]};
+var paul = new Paul(['kids']);
+
+var nodeC = tree.kids[1];
+var siblings = paul.depthSiblings(tree, nodeC);
+
+assert.deepEqual(siblings, {
+	left: [{id: "B"}],
+	right: [{id: "D"}]
+});
 ```
 
 ## Why "Paul"?
