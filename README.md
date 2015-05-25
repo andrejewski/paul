@@ -42,8 +42,8 @@ require('assert').equal(20, sum);
 		- [`find(tree, predicate) node`](https://github.com/andrejewski/paul#findtree-predicate-node)
 		- [`findWhere(tree, properties) node`](https://github.com/andrejewski/paul#findwheretree-properties-node)
 		- [`reduce(tree, iteratee, [memo]) memo`](https://github.com/andrejewski/paul#reducetree-iteratee-memo-memo)
-		- `parent(tree, node) parentNode`
-		- `siblings(tree, node) {left, right}`
+		- [`parent(tree, node) parentNode`](https://github.com/andrejewski/paul#parenttree-node-parentnode)
+		- [`siblings(tree, node) {left, right}`](https://github.com/andrejewski/paul#siblingstree-node-left-right)
 
 **Note:** Methods `iterator()` through `siblings()` are not actual methods and instead there are two methods that differ solely on traversal method. For instance, `find()` must be called as either `depthFind()` or `breadthFind()`. An [explanation](http://stackoverflow.com/a/687752/1444710) of the difference between these traversals may be helpful.
 

@@ -1,6 +1,6 @@
 {
   "name": "paul",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "tree traversal and transform functions",
   "main": "index.js",
   "directories": {
