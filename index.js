@@ -280,7 +280,8 @@ Paul.siblings = function siblings(walker, iterator) {
 
 Paul.walk = function walk(node, func) {
 	function walk(node) {
-		return func(node, walk);
+		var rest = Array.prototype.slice.call(arguments, 1);
+		return func.apply(null, [node, walk].concat(rest));
 	}
 	if(Array.isArray(node)) {
 		var nodes = [];
@@ -289,7 +290,9 @@ Paul.walk = function walk(node, func) {
 		}
 		return nodes;
 	}
-	return walk(node);
+
+	var rest = Array.prototype.slice.call(arguments, 2);
+	return walk.apply(null, [node].concat(rest));
 }
 
 function cap(str) {

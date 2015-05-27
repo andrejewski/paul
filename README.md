@@ -309,7 +309,7 @@ assert.equal(tree, parentOfB);
 
 ### siblings(tree, node) {left, right}
 
-Returns the sibling nodes of the given **node**. If the node is not found in the **tree** or the node has no parent (meaning the node is the tree), `undefined` is returned. Also if the node is not in an Array member (i.e {child: node}), the node cannot have any siblings and thus `undefined` is returned.
+Returns the sibling nodes of the given **node**. If the node is not found in the **tree** or the node has no parent (meaning the node is the tree), `undefined` is returned. Also if the node is not in an Array member (i.e `{child: node}`), the node cannot have any siblings and thus `undefined` is returned.
 
 Siblings of a node are returned in an object containing two properties `left` and `right`. Siblings that come before the given node are placed in the `left` property. Siblings that come after the given node are placed in the `right` property.
 

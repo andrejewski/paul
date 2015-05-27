@@ -85,17 +85,17 @@ describe('Paul', function() {
 	});
 
 	describe('walk(tree, walkFn)', function() {
-		it('should walk the tree as described by the walkFn', function() {
-			var tree = {
-				op: '+',
-				left: {value: 8},
-				right: {
-					op: '/',
-					left: {value: 20},
-					right: {value: 4}
-				}
-			};
+		var tree = {
+			op: '+',
+			left: {value: 8},
+			right: {
+				op: '/',
+				left: {value: 20},
+				right: {value: 4}
+			}
+		};
 
+		it('should walk the tree as described by the walkFn', function() {
 			var math = Paul.walk(tree, function(node, walk) {
 				if(node.op) {
 					return '(' + walk(node.left) + node.op + walk(node.right) + ')';
@@ -104,6 +104,20 @@ describe('Paul', function() {
 			});
 
 			assert.equal(math, '(8+(20/4))');
+		});
+
+		it('should pass extra arguments from the walkFn to the next node', function() {
+			var history = Paul.walk(tree, function(node, walk, count) {
+				if(node.left && node.right) {
+					return [count].concat(
+						walk(node.left, count + 1),
+						walk(node.right, count + 10));
+				} else {
+					return count + 5;
+				}
+			}, 10);
+
+			assert.deepEqual(history, [10, 16, 20, 26, 35]);
 		});
 	});
 
