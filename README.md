@@ -123,6 +123,8 @@ var math = Paul.walk(tree, function(node, walk) {
 assert.equal(math, '(8+(20/4))');
 ```
 
+If only the `walkFn` is provided, the function will return a generic function to call on any `tree`.
+
 ===
 
 ### map(tree, transform) tree

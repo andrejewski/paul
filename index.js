@@ -279,20 +279,25 @@ Paul.siblings = function siblings(walker, iterator) {
 }
 
 Paul.walk = function walk(node, func) {
-	function walk(node) {
+	function _walk(node) {
 		var rest = Array.prototype.slice.call(arguments, 1);
-		return func.apply(null, [node, walk].concat(rest));
-	}
-	if(Array.isArray(node)) {
-		var nodes = [];
-		for(var i = 0; i < node.length; i++) {
-			nodes.push(walk(node));
+		if(Array.isArray(node)) {
+			var nodes = [];
+			for(var i = 0; i < node.length; i++) {
+				nodes.push(func.apply(null, [node[i], _walk].concat(rest)));
+			}
+			return nodes;
 		}
-		return nodes;
+		return func.apply(null, [node, _walk].concat(rest));
+	}
+
+	if(func === void 0) {
+		func = node;
+		return _walk;
 	}
 
 	var rest = Array.prototype.slice.call(arguments, 2);
-	return walk.apply(null, [node].concat(rest));
+	return _walk.apply(null, [node].concat(rest));
 }
 
 function cap(str) {

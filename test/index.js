@@ -85,7 +85,7 @@ describe('Paul', function() {
 	});
 
 	describe('walk(tree, walkFn)', function() {
-		var tree = {
+		var treeA = {
 			op: '+',
 			left: {value: 8},
 			right: {
@@ -95,8 +95,10 @@ describe('Paul', function() {
 			}
 		};
 
+		var treeB = [4, '*', 5, '+', [12, '-', 8]];
+
 		it('should walk the tree as described by the walkFn', function() {
-			var math = Paul.walk(tree, function(node, walk) {
+			var math = Paul.walk(treeA, function(node, walk) {
 				if(node.op) {
 					return '(' + walk(node.left) + node.op + walk(node.right) + ')';
 				}
@@ -107,7 +109,7 @@ describe('Paul', function() {
 		});
 
 		it('should pass extra arguments from the walkFn to the next node', function() {
-			var history = Paul.walk(tree, function(node, walk, count) {
+			var history = Paul.walk(treeA, function(node, walk, count) {
 				if(node.left && node.right) {
 					return [count].concat(
 						walk(node.left, count + 1),
@@ -119,6 +121,28 @@ describe('Paul', function() {
 
 			assert.deepEqual(history, [10, 16, 20, 26, 35]);
 		});
+
+		it('should call the walkFn on multiple sibling nodes individually', function() {
+			var math = Paul.walk(treeB, function(node, walk) {
+				if(Array.isArray(node)) {
+					return '('+walk(node).join(' ')+')';
+				}
+				return node;
+			}).join(' ');
+
+			assert.equal(math, '4 * 5 + (12 - 8)');
+		});
+
+		it('should if no tree is provided return a function that takes a tree', function() {
+			var calc = Paul.walk(function(node, walk) {
+				if(node.op) {
+					return '(' + walk(node.left) + node.op + walk(node.right) + ')';
+				}
+				return node.value;
+			});
+			var math = calc(treeA);
+			assert.equal(math, '(8+(20/4))');
+		})
 	});
 
 	describe('prototype', function() {
